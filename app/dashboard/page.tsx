@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import vi from "@/lib/localization"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -26,8 +27,8 @@ export default function DashboardPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                 <span className="text-2xl">💊</span>
               </div>
-              <h3 className="font-medium text-sm">Add Medicine</h3>
-              <p className="text-xs text-muted-foreground">Track your medications</p>
+              <h3 className="font-medium text-sm">{vi.dashboard.addMedicine}</h3>
+              <p className="text-xs text-muted-foreground">{vi.dashboard.trackMedications}</p>
             </Button>
 
             <Button
@@ -38,14 +39,14 @@ export default function DashboardPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                 <span className="text-2xl">🎯</span>
               </div>
-              <h3 className="font-medium text-sm">Set Goal</h3>
-              <p className="text-xs text-muted-foreground">Create health goals</p>
+              <h3 className="font-medium text-sm">{vi.dashboard.setGoal}</h3>
+              <p className="text-xs text-muted-foreground">{vi.dashboard.createHealthGoals}</p>
             </Button>
           </div>
 
           {/* Today's Tasks */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Today's Tasks</h2>
+            <h2 className="text-lg font-semibold">{vi.dashboard.todaysTasks}</h2>
 
             <div className="bg-card rounded-2xl p-4 border">
               <div className="flex items-center gap-3">
@@ -53,12 +54,14 @@ export default function DashboardPage() {
                   <span className="text-lg">💊</span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Take Morning Medication</h3>
-                  <p className="text-sm text-muted-foreground">Due in 2 hours</p>
+                  <h3 className="font-medium">Uống thuốc buổi sáng</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {vi.dashboard.dueIn} 2 {vi.dashboard.hours}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-medium text-primary">8:00 AM</div>
-                  <div className="text-xs text-muted-foreground">Pending</div>
+                  <div className="text-sm font-medium text-primary">8:00 {vi.time.am}</div>
+                  <div className="text-xs text-muted-foreground">{vi.common.pending}</div>
                 </div>
               </div>
             </div>
@@ -69,12 +72,12 @@ export default function DashboardPage() {
                   <span className="text-lg">✅</span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">Drink Water</h3>
-                  <p className="text-sm text-muted-foreground">Completed</p>
+                  <h3 className="font-medium">Uống nước</h3>
+                  <p className="text-sm text-muted-foreground">{vi.common.completed}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-medium text-green-600">7:00 AM</div>
-                  <div className="text-xs text-muted-foreground">Done</div>
+                  <div className="text-sm font-medium text-green-600">7:00 {vi.time.am}</div>
+                  <div className="text-xs text-muted-foreground">{vi.common.done}</div>
                 </div>
               </div>
             </div>
@@ -84,7 +87,7 @@ export default function DashboardPage() {
               className="w-full h-12 border-dashed border-2 border-muted text-muted-foreground bg-transparent"
               onClick={() => router.push("/add-task")}
             >
-              + Add More Tasks
+              + {vi.dashboard.addTask}
             </Button>
           </div>
         </div>

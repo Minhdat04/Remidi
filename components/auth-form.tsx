@@ -10,6 +10,7 @@ import { ChevronLeft, User } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+import vi from "@/lib/localization"
 
 interface AuthFormProps {
   type: "signup" | "signin"
@@ -42,7 +43,7 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
       }
       router.push("/dashboard")
     } catch (err) {
-      setError("Authentication failed. Please try again.")
+      setError("Xác thực thất bại. Vui lòng thử lại.")
       console.error("[v0] Auth error:", err)
     }
   }
@@ -52,7 +53,7 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
       await socialLogin(provider)
       router.push("/dashboard")
     } catch (err) {
-      setError("Social login failed. Please try again.")
+      setError("Đăng nhập mạng xã hội thất bại. Vui lòng thử lại.")
       console.error("[v0] Social login error:", err)
     }
   }
@@ -75,7 +76,7 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
           <Button variant="ghost" size="sm" onClick={onBack}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <span className="text-sm font-medium text-primary">{isSignup ? "Sign Up" : "Sign In"}</span>
+          <span className="text-sm font-medium text-primary">{isSignup ? vi.auth.signUp : vi.auth.signIn}</span>
         </div>
       </div>
 
@@ -103,11 +104,11 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="text-sm text-muted-foreground">
-                      First Name
+                      {vi.auth.firstName}
                     </Label>
                     <Input
                       id="firstName"
-                      placeholder="First Name"
+                      placeholder={vi.auth.placeholders.firstName}
                       value={formData.firstName}
                       onChange={(e) => setFormData((prev) => ({ ...prev, firstName: e.target.value }))}
                       className="h-12"
@@ -116,11 +117,11 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName" className="text-sm text-muted-foreground">
-                      Last Name
+                      {vi.auth.lastName}
                     </Label>
                     <Input
                       id="lastName"
-                      placeholder="Last Name"
+                      placeholder={vi.auth.placeholders.lastName}
                       value={formData.lastName}
                       onChange={(e) => setFormData((prev) => ({ ...prev, lastName: e.target.value }))}
                       className="h-12"
@@ -134,17 +135,17 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="getOtp" className="text-sm text-muted-foreground">
-                      Get Otp
+                      {vi.auth.getOtp}
                     </Label>
-                    <Input id="getOtp" placeholder="Get Otp" className="h-12" />
+                    <Input id="getOtp" placeholder={vi.auth.placeholders.getOtp} className="h-12" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="age" className="text-sm text-muted-foreground">
-                      Age
+                      {vi.auth.age}
                     </Label>
                     <Input
                       id="age"
-                      placeholder="Age"
+                      placeholder={vi.auth.placeholders.age}
                       value={formData.age}
                       onChange={(e) => setFormData((prev) => ({ ...prev, age: e.target.value }))}
                       className="h-12"
@@ -155,12 +156,12 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm text-muted-foreground">
-                  Email Address
+                  {vi.auth.email}
                 </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Email Address"
+                  placeholder={vi.auth.placeholders.email}
                   value={formData.email}
                   onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   className="h-12"
@@ -170,12 +171,12 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm text-muted-foreground">
-                  Password
+                  {vi.auth.password}
                 </Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder={vi.auth.placeholders.password}
                   value={formData.password}
                   onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                   className="h-12"
@@ -186,20 +187,20 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
               {!isSignup && (
                 <div className="text-right">
                   <Button variant="link" className="text-sm text-primary p-0 h-auto">
-                    Forgot Password?
+                    {vi.auth.forgotPassword}
                   </Button>
                 </div>
               )}
 
               {/* Loading State to Button */}
               <Button type="submit" className="w-full h-12 text-base font-medium" disabled={isLoading}>
-                {isLoading ? "Please wait..." : "Continue"}
+                {isLoading ? "Vui lòng đợi..." : "Tiếp tục"}
               </Button>
             </form>
 
             {/* Social Login */}
             <div className="space-y-3">
-              <div className="text-center text-sm text-muted-foreground">Or Continue with</div>
+              <div className="text-center text-sm text-muted-foreground">{vi.auth.orContinueWith}</div>
 
               <div className="flex justify-center gap-4">
                 <Button
@@ -258,22 +259,35 @@ export function AuthForm({ type, onBack }: AuthFormProps) {
             {/* Terms and Toggle */}
             {isSignup && (
               <p className="text-xs text-muted-foreground text-center leading-relaxed">
-                By Signing Up, you are agree to the{" "}
+                {vi.auth.bySigningUp}{" "}
                 <Button variant="link" className="text-xs text-primary p-0 h-auto underline">
-                  Terms of use & Privacy Policy
+                  {vi.auth.termsAndConditions}
                 </Button>
               </p>
             )}
 
             {!isSignup && (
               <p className="text-sm text-center text-muted-foreground">
-                {"Don't have an account? "}
+                {vi.auth.dontHaveAccount}{" "}
                 <Button
                   variant="link"
                   onClick={handleToggleMode}
                   className="text-sm text-primary p-0 h-auto font-medium"
                 >
-                  Sign up
+                  {vi.auth.signUp}
+                </Button>
+              </p>
+            )}
+
+            {isSignup && (
+              <p className="text-sm text-center text-muted-foreground">
+                {vi.auth.alreadyHaveAccount}{" "}
+                <Button
+                  variant="link"
+                  onClick={handleToggleMode}
+                  className="text-sm text-primary p-0 h-auto font-medium"
+                >
+                  {vi.auth.signIn}
                 </Button>
               </p>
             )}

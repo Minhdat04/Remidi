@@ -5,6 +5,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ChevronLeft } from "lucide-react"
+import vi from "@/lib/localization"
 
 interface OnboardingScreenProps {
   title: string
@@ -25,7 +26,7 @@ export function OnboardingScreen({
   onNext,
   onSkip,
   showSkip = true,
-  nextText = "Next",
+  nextText = vi.common.next, // Use Vietnamese default text
   currentStep,
   totalSteps,
 }: OnboardingScreenProps) {
@@ -78,7 +79,7 @@ export function OnboardingScreen({
 
         {showSkip && (
           <Button variant="ghost" onClick={onSkip} className="w-full h-12 text-base font-medium text-muted-foreground">
-            Skip
+            {vi.common.skip}
           </Button>
         )}
       </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Home, User, Target, History, Bell, Plus } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
 import { useNotifications } from "@/lib/notification-context"
+import vi from "@/lib/localization"
 
 export function BottomNavigation() {
   const router = useRouter()
@@ -11,11 +12,11 @@ export function BottomNavigation() {
   const { unreadCount } = useNotifications()
 
   const navItems = [
-    { icon: Home, label: "Home", path: "/dashboard" },
-    { icon: Target, label: "Goals", path: "/goals" },
-    { icon: History, label: "History", path: "/history" },
-    { icon: Bell, label: "Notifications", path: "/notifications", badge: unreadCount },
-    { icon: User, label: "Profile", path: "/profile" },
+    { icon: Home, label: vi.navigation.home, path: "/dashboard" },
+    { icon: Target, label: vi.navigation.goals, path: "/goals" },
+    { icon: History, label: vi.navigation.history, path: "/history" },
+    { icon: Bell, label: vi.navigation.notifications, path: "/notifications", badge: unreadCount },
+    { icon: User, label: vi.navigation.profile, path: "/profile" },
   ]
 
   return (

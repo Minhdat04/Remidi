@@ -8,10 +8,11 @@ import { AuthProvider } from "@/lib/auth-context"
 import { NotificationProvider } from "@/lib/notification-context"
 import { ActivityProvider } from "@/lib/activity-context"
 import { Suspense } from "react"
+import vi from "@/lib/localization"
 
 export const metadata: Metadata = {
-  title: "REMIDI - Healthcare App",
-  description: "Your personal healthcare companion for medication tracking and wellness goals",
+  title: vi.app.title,
+  description: vi.app.description,
   generator: "v0.app",
 }
 
@@ -21,9 +22,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="vi">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>{vi.common.loading}</div>}>
           <AuthProvider>
             <NotificationProvider>
               <ActivityProvider>{children}</ActivityProvider>

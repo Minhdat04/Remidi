@@ -6,6 +6,7 @@ import { FileText, Heart, HandHeart } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import vi from "@/lib/localization"
 
 type Screen = "onboarding-1" | "onboarding-2" | "onboarding-3"
 
@@ -43,8 +44,8 @@ export default function Home() {
   if (currentScreen === "onboarding-1") {
     return (
       <OnboardingScreen
-        title="Onboarding 1"
-        description="Get registered into REMIDI app. Do the tasks and act virtuously. You will reap what you show."
+        title={vi.onboarding.screen1.title}
+        description={vi.onboarding.screen1.description}
         icon={<FileText className="w-12 h-12 text-primary-foreground" />}
         onNext={handleNext}
         onSkip={handleSkip}
@@ -57,14 +58,14 @@ export default function Home() {
   if (currentScreen === "onboarding-2") {
     return (
       <OnboardingScreen
-        title="Onboarding 2"
-        description="Connect your REMIDI taking medicine on time. When positive things are rewarded, you will be happy."
+        title={vi.onboarding.screen2.title}
+        description={vi.onboarding.screen2.description}
         icon={<Heart className="w-12 h-12 text-primary-foreground" />}
         onNext={handleNext}
         onSkip={handleSkip}
         currentStep={2}
         totalSteps={3}
-        nextText="Skip"
+        nextText={vi.common.skip}
       />
     )
   }
@@ -72,13 +73,13 @@ export default function Home() {
   if (currentScreen === "onboarding-3") {
     return (
       <OnboardingScreen
-        title="Onboarding 3"
-        description="If you do a good thing, then over time your Remidi will be good, and you'll receive good Remidi in return."
+        title={vi.onboarding.screen3.title}
+        description={vi.onboarding.screen3.description}
         icon={<HandHeart className="w-12 h-12 text-primary-foreground" />}
         onNext={handleNext}
         onSkip={handleSkip}
         showSkip={false}
-        nextText="Next"
+        nextText={vi.common.next}
         currentStep={3}
         totalSteps={3}
       />

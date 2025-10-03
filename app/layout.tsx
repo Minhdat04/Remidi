@@ -7,6 +7,11 @@ import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import { NotificationProvider } from "@/lib/notification-context"
 import { ActivityProvider } from "@/lib/activity-context"
+import { GoalsProvider } from "@/lib/goals-context"
+import { MedicationsProvider } from "@/lib/medications-context"
+import { TasksProvider } from "@/lib/tasks-context"
+import { RemindersProvider } from "@/lib/reminders-context"
+import { ProgressProvider } from "@/lib/progress-context"
 import { Suspense } from "react"
 import vi from "@/lib/localization"
 
@@ -26,9 +31,19 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={<div>{vi.common.loading}</div>}>
           <AuthProvider>
-            <NotificationProvider>
-              <ActivityProvider>{children}</ActivityProvider>
-            </NotificationProvider>
+            <GoalsProvider>
+              <MedicationsProvider>
+                <TasksProvider>
+                  <NotificationProvider>
+                    <RemindersProvider>
+                      <ProgressProvider>
+                        <ActivityProvider>{children}</ActivityProvider>
+                      </ProgressProvider>
+                    </RemindersProvider>
+                  </NotificationProvider>
+                </TasksProvider>
+              </MedicationsProvider>
+            </GoalsProvider>
           </AuthProvider>
         </Suspense>
         <Analytics />

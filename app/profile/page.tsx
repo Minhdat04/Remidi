@@ -18,16 +18,16 @@ export default function ProfilePage() {
   }
 
   const profileItems = [
-    { icon: User, label: "Account", action: () => {} },
-    { icon: Globe, label: "Language", action: () => {} },
-    { icon: Link, label: "Connected Services", action: () => {} },
+    { icon: User, label: "Tài khoản", action: () => {} },
+    { icon: Globe, label: "Ngôn ngữ", action: () => {} },
+    { icon: Link, label: "Dịch vụ đã kết nối", action: () => {} },
   ]
 
   const settingsItems = [
-    { label: "Connected Services", toggle: true },
-    { label: "About Us", action: () => {} },
-    { label: "Terms & Conditions", action: () => {} },
-    { label: "Logout", action: handleLogout, danger: true },
+    { label: "Dịch vụ đã kết nối", toggle: true },
+    { label: "Về chúng tôi", action: () => {} },
+    { label: "Điều khoản & Điều kiện", action: () => {} },
+    { label: "Đăng xuất", action: handleLogout, danger: true },
   ]
 
   return (
@@ -40,7 +40,7 @@ export default function ProfilePage() {
               <Button variant="ghost" size="sm" onClick={() => router.back()}>
                 <ChevronLeft className="w-5 h-5 text-primary-foreground" />
               </Button>
-              <span className="text-lg font-semibold">Profile</span>
+              <span className="text-lg font-semibold">Hồ Sơ</span>
             </div>
 
             {/* User Avatar */}
@@ -51,7 +51,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="text-center">
-              <h2 className="text-xl font-semibold">User's Dashboard</h2>
+              <h2 className="text-xl font-semibold">Bảng điều khiển người dùng</h2>
               <p className="text-primary-foreground/80">+84 353540***</p>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function ProfilePage() {
 
           {/* Settings Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Connected Services</h3>
+            <h3 className="text-lg font-semibold">Dịch vụ đã kết nối</h3>
 
             <div className="space-y-2">
               {settingsItems.map((item, index) => (

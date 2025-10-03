@@ -14,20 +14,25 @@ export function TaskCalendar({ onBack, onAddTask }: TaskCalendarProps) {
   const [selectedView, setSelectedView] = useState<"Day" | "Week" | "Month">("Day")
   const [selectedDate, setSelectedDate] = useState(10)
 
-  const viewButtons = ["Day", "Week", "Month"] as const
+  const viewButtons = [
+    { key: "Day" as const, label: "Ngày" },
+    { key: "Week" as const, label: "Tuần" },
+    { key: "Month" as const, label: "Tháng" },
+  ]
+
   const dates = [
-    { date: 8, day: "Mon" },
-    { date: 9, day: "Tue" },
-    { date: 10, day: "Wed" },
-    { date: 11, day: "Thu" },
-    { date: 12, day: "Fri" },
+    { date: 8, day: "T2" },
+    { date: 9, day: "T3" },
+    { date: 10, day: "T4" },
+    { date: 11, day: "T5" },
+    { date: 12, day: "T6" },
   ]
 
   const tasks = [
     {
       id: 1,
-      title: "Take medicines",
-      description: "Take your daily medicine on time. Do not skip any dose. Take it with water.",
+      title: "Uống thuốc",
+      description: "Uống thuốc hàng ngày đúng giờ. Không bỏ liều nào. Uống cùng với nước.",
       status: "active",
       color: "bg-green-100 text-green-600",
     },
@@ -53,13 +58,13 @@ export function TaskCalendar({ onBack, onAddTask }: TaskCalendarProps) {
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           {viewButtons.map((view) => (
             <Button
-              key={view}
-              variant={selectedView === view ? "default" : "ghost"}
+              key={view.key}
+              variant={selectedView === view.key ? "default" : "ghost"}
               size="sm"
-              onClick={() => setSelectedView(view)}
+              onClick={() => setSelectedView(view.key)}
               className="flex-1 h-8"
             >
-              {view}
+              {view.label}
             </Button>
           ))}
         </div>
@@ -87,7 +92,7 @@ export function TaskCalendar({ onBack, onAddTask }: TaskCalendarProps) {
       <div className="flex-1 px-4 space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span className="text-sm font-medium text-green-600">Active</span>
+          <span className="text-sm font-medium text-green-600">Đang hoạt động</span>
         </div>
 
         {tasks.map((task) => (
@@ -108,7 +113,7 @@ export function TaskCalendar({ onBack, onAddTask }: TaskCalendarProps) {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm font-medium text-orange-600">Add</span>
+            <span className="text-sm font-medium text-orange-600">Thêm</span>
           </div>
 
           <Card className="p-4 border-dashed border-2 border-muted">
@@ -116,9 +121,9 @@ export function TaskCalendar({ onBack, onAddTask }: TaskCalendarProps) {
               <div className="w-12 h-12 bg-muted rounded-xl mx-auto flex items-center justify-center">
                 <Plus className="w-6 h-6 text-muted-foreground" />
               </div>
-              <p className="text-sm text-muted-foreground">Add more tasks</p>
+              <p className="text-sm text-muted-foreground">Thêm nhiệm vụ</p>
               <Button variant="link" className="text-primary p-0 h-auto">
-                Create More!
+                Tạo thêm!
               </Button>
             </div>
           </Card>

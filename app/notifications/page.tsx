@@ -31,10 +31,10 @@ export default function NotificationsPage() {
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <span className="text-lg font-semibold">Notifications</span>
+            <span className="text-lg font-semibold">Thông Báo</span>
           </div>
           <Button variant="ghost" size="sm" onClick={handleClearAll}>
-            Clear All
+            Xóa tất cả
             <MoreHorizontal className="w-4 h-4 ml-1" />
           </Button>
         </div>
@@ -45,7 +45,7 @@ export default function NotificationsPage() {
             <div className="flex items-center gap-2 mb-4">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-sm font-medium text-blue-600">
-                {notifications.filter((n) => !n.read).length > 0 ? "Unread Notifications" : "All Notifications"}
+                {notifications.filter((n) => !n.read).length > 0 ? "Thông báo chưa đọc" : "Tất cả thông báo"}
               </span>
             </div>
           )}
@@ -55,8 +55,8 @@ export default function NotificationsPage() {
               <div className="w-16 h-16 bg-muted rounded-full mx-auto flex items-center justify-center mb-4">
                 <Bell className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No Notifications</h3>
-              <p className="text-muted-foreground">You're all caught up! Check back later for updates.</p>
+              <h3 className="text-lg font-semibold mb-2">Không có thông báo</h3>
+              <p className="text-muted-foreground">Bạn đã xem hết! Quay lại sau để cập nhật.</p>
             </div>
           ) : (
             notifications.map((notification) => (

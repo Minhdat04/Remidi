@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 interface User {
   id: string
@@ -15,6 +16,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null
+  supabaseUser: SupabaseUser | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   signup: (userData: {
@@ -24,7 +26,7 @@ interface AuthContextType {
     password: string
     age?: string
   }) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   socialLogin: (provider: "google" | "facebook" | "apple") => Promise<void>
 }
 
@@ -32,15 +34,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const supabase = createClient()
 
   useEffect(() => {
-    // Check for existing session on mount
     const checkAuth = async () => {
       try {
-        const savedUser = localStorage.getItem("remidi_user")
-        if (savedUser) {
-          setUser(JSON.parse(savedUser))
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser()
+
+        if (authUser) {
+          setSupabaseUser(authUser)
+
+          // Fetch profile data
+          const { data: profile } = await supabase.from("profiles").select("*").eq("id", authUser.id).single()
+
+          if (profile) {
+            setUser({
+              id: authUser.id,
+              email: authUser.email || "",
+              firstName: profile.full_name?.split(" ")[0] || "",
+              lastName: profile.full_name?.split(" ").slice(1).join(" ") || "",
+              avatar: profile.avatar_url || undefined,
+            })
+          }
         }
       } catch (error) {
         console.error("[v0] Auth check error:", error)
@@ -50,24 +69,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     checkAuth()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[v0] Auth state changed:", event)
+
+      if (session?.user) {
+        setSupabaseUser(session.user)
+
+        // Fetch profile data
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).single()
+
+        if (profile) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || "",
+            firstName: profile.full_name?.split(" ")[0] || "",
+            lastName: profile.full_name?.split(" ").slice(1).join(" ") || "",
+            avatar: profile.avatar_url || undefined,
+          })
+        }
+      } else {
+        setUser(null)
+        setSupabaseUser(null)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const mockUser: User = {
-        id: "1",
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        firstName: "John",
-        lastName: "Doe",
-      }
+        password,
+      })
 
-      setUser(mockUser)
-      localStorage.setItem("remidi_user", JSON.stringify(mockUser))
-      console.log("[v0] User logged in:", mockUser)
+      if (error) throw error
+
+      console.log("[v0] User logged in:", data.user)
     } catch (error) {
       console.error("[v0] Login error:", error)
       throw error
@@ -85,20 +129,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const newUser: User = {
-        id: Date.now().toString(),
+      const { data, error } = await supabase.auth.signUp({
         email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        age: userData.age,
-      }
+        password: userData.password,
+        options: {
+          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+          data: {
+            full_name: `${userData.firstName} ${userData.lastName}`,
+            age: userData.age,
+          },
+        },
+      })
 
-      setUser(newUser)
-      localStorage.setItem("remidi_user", JSON.stringify(newUser))
-      console.log("[v0] User signed up:", newUser)
+      if (error) throw error
+
+      console.log("[v0] User signed up:", data.user)
     } catch (error) {
       console.error("[v0] Signup error:", error)
       throw error
@@ -110,19 +155,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const socialLogin = async (provider: "google" | "facebook" | "apple") => {
     setIsLoading(true)
     try {
-      // Simulate social login
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider === "apple" ? "apple" : provider,
+        options: {
+          redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
+        },
+      })
 
-      const mockUser: User = {
-        id: Date.now().toString(),
-        email: `user@${provider}.com`,
-        firstName: "Social",
-        lastName: "User",
-      }
+      if (error) throw error
 
-      setUser(mockUser)
-      localStorage.setItem("remidi_user", JSON.stringify(mockUser))
-      console.log("[v0] Social login successful:", provider, mockUser)
+      console.log("[v0] Social login initiated:", provider)
     } catch (error) {
       console.error("[v0] Social login error:", error)
       throw error
@@ -131,9 +173,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
-    localStorage.removeItem("remidi_user")
+    setSupabaseUser(null)
     console.log("[v0] User logged out")
   }
 
@@ -141,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        supabaseUser,
         isLoading,
         login,
         signup,

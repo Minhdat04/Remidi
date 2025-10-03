@@ -47,10 +47,10 @@ export default function HistoryPage() {
     const diffTime = now.getTime() - date.getTime()
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 0) return "Today"
-    if (diffDays === 1) return "Yesterday"
-    if (diffDays <= 7) return `${diffDays} Days Earlier`
-    return date.toLocaleDateString()
+    if (diffDays === 0) return "Hôm nay"
+    if (diffDays === 1) return "Hôm qua"
+    if (diffDays <= 7) return `${diffDays} ngày trước`
+    return date.toLocaleDateString("vi-VN")
   }
 
   return (
@@ -61,7 +61,7 @@ export default function HistoryPage() {
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <span className="text-lg font-semibold">Remidi History</span>
+          <span className="text-lg font-semibold">Lịch Sử Remidi</span>
         </div>
 
         {/* Content */}
@@ -70,15 +70,15 @@ export default function HistoryPage() {
           <Card className="bg-primary text-primary-foreground p-6">
             <div className="text-center space-y-4">
               <div className="text-4xl font-bold">{completionRate}%</div>
-              <div className="text-lg">Remidi accomplished</div>
+              <div className="text-lg">Remidi đã hoàn thành</div>
 
               <div className="grid grid-cols-2 gap-4 mt-6">
                 <div className="bg-primary-foreground/20 rounded-lg p-3 text-center">
-                  <div className="text-lg font-bold">Points</div>
+                  <div className="text-lg font-bold">Điểm</div>
                   <div className="text-sm opacity-80">{totalPoints}</div>
                 </div>
                 <div className="bg-primary-foreground/20 rounded-lg p-3 text-center">
-                  <div className="text-lg font-bold">Goals</div>
+                  <div className="text-lg font-bold">Mục tiêu</div>
                   <div className="text-sm opacity-80">{activities.filter((a) => a.type === "goal").length}</div>
                 </div>
               </div>
@@ -88,15 +88,15 @@ export default function HistoryPage() {
           {/* History Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">History</h2>
-              <span className="text-sm text-muted-foreground">View in Last 7 Days</span>
+              <h2 className="text-lg font-semibold">Lịch Sử</h2>
+              <span className="text-sm text-muted-foreground">Xem trong 7 ngày qua</span>
             </div>
 
             {/* History Items */}
             <div className="space-y-3">
               {recentActivities.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No recent activity to show</p>
+                  <p className="text-muted-foreground">Không có hoạt động gần đây</p>
                 </div>
               ) : (
                 recentActivities.map((activity) => (
@@ -117,7 +117,11 @@ export default function HistoryPage() {
                       <div
                         className={`text-xs capitalize ${activity.status === "completed" ? "text-green-600" : activity.status === "missed" ? "text-red-600" : "text-yellow-600"}`}
                       >
-                        {activity.status}
+                        {activity.status === "completed"
+                          ? "Hoàn thành"
+                          : activity.status === "missed"
+                            ? "Bỏ lỡ"
+                            : "Đang chờ"}
                       </div>
                     </div>
                   </div>
@@ -127,7 +131,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Updated Info */}
-          <div className="text-center text-xs text-muted-foreground">Updated few seconds ago</div>
+          <div className="text-center text-xs text-muted-foreground">Cập nhật vài giây trước</div>
         </div>
 
         <BottomNavigation />

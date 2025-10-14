@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { createContext, useContext, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import type { Goal } from "@/lib/types/database"
 
@@ -20,97 +19,42 @@ const GoalsContext = createContext<GoalsContextType | undefined>(undefined)
 
 export function GoalsProvider({ children }: { children: React.ReactNode }) {
   const [goals, setGoals] = useState<Goal[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const { supabaseUser } = useAuth()
-  const supabase = createClient()
-
-  const fetchGoals = async () => {
-    if (!supabaseUser) {
-      setGoals([])
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("goals")
-        .select("*")
-        .eq("user_id", supabaseUser.id)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-
-      setGoals(data || [])
-    } catch (error) {
-      console.error("[v0] Error fetching goals:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchGoals()
-  }, [supabaseUser])
+  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
 
   const createGoal = async (goalData: Omit<Goal, "id" | "user_id" | "created_at" | "updated_at">) => {
-    if (!supabaseUser) throw new Error("User not authenticated")
+    if (!user) throw new Error("User not authenticated")
 
-    try {
-      const { data, error } = await supabase
-        .from("goals")
-        .insert({
-          ...goalData,
-          user_id: supabaseUser.id,
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      setGoals((prev) => [data, ...prev])
-      console.log("[v0] Goal created:", data)
-    } catch (error) {
-      console.error("[v0] Error creating goal:", error)
-      throw error
+    const newGoal: Goal = {
+      ...goalData,
+      id: `goal-${Date.now()}`,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
+
+    setGoals((prev) => [newGoal, ...prev])
   }
 
   const updateGoal = async (id: string, updates: Partial<Goal>) => {
-    if (!supabaseUser) throw new Error("User not authenticated")
+    if (!user) throw new Error("User not authenticated")
 
-    try {
-      const { data, error } = await supabase
-        .from("goals")
-        .update(updates)
-        .eq("id", id)
-        .eq("user_id", supabaseUser.id)
-        .select()
-        .single()
-
-      if (error) throw error
-
-      setGoals((prev) => prev.map((goal) => (goal.id === id ? data : goal)))
-      console.log("[v0] Goal updated:", data)
-    } catch (error) {
-      console.error("[v0] Error updating goal:", error)
-      throw error
-    }
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === id
+          ? {
+              ...goal,
+              ...updates,
+              updated_at: new Date().toISOString(),
+            }
+          : goal,
+      ),
+    )
   }
 
   const deleteGoal = async (id: string) => {
-    if (!supabaseUser) throw new Error("User not authenticated")
-
-    try {
-      const { error } = await supabase.from("goals").delete().eq("id", id).eq("user_id", supabaseUser.id)
-
-      if (error) throw error
-
-      setGoals((prev) => prev.filter((goal) => goal.id !== id))
-      console.log("[v0] Goal deleted:", id)
-    } catch (error) {
-      console.error("[v0] Error deleting goal:", error)
-      throw error
-    }
+    if (!user) throw new Error("User not authenticated")
+    setGoals((prev) => prev.filter((goal) => goal.id !== id))
   }
 
   const getGoalById = (id: string) => {
@@ -118,7 +62,7 @@ export function GoalsProvider({ children }: { children: React.ReactNode }) {
   }
 
   const refreshGoals = async () => {
-    await fetchGoals()
+    // No-op for local state
   }
 
   return (

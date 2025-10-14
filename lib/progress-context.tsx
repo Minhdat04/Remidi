@@ -1,7 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { createBrowserClient } from "@supabase/ssr"
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { useAuth } from "./auth-context"
 
 export interface Progress {
@@ -30,52 +29,20 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const [progressRecords, setProgressRecords] = useState<Progress[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const fetchProgress = async () => {
-    if (!user) {
-      setProgressRecords([])
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("progress_tracking")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("recorded_date", { ascending: false })
-
-      if (error) throw error
-      setProgressRecords(data || [])
-    } catch (error) {
-      console.error("[v0] Error fetching progress:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchProgress()
-  }, [user])
 
   const addProgress = async (progress: Omit<Progress, "id" | "user_id" | "created_at">) => {
     if (!user) throw new Error("User not authenticated")
 
-    const { data, error } = await supabase
-      .from("progress_tracking")
-      .insert([{ ...progress, user_id: user.id }])
-      .select()
-      .single()
+    const newProgress: Progress = {
+      ...progress,
+      id: `progress-${Date.now()}`,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+    }
 
-    if (error) throw error
-    setProgressRecords((prev) => [data, ...prev])
+    setProgressRecords((prev) => [newProgress, ...prev])
   }
 
   const getProgressByGoal = (goalId: string) => {
@@ -87,14 +54,11 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteProgress = async (id: string) => {
-    const { error } = await supabase.from("progress_tracking").delete().eq("id", id)
-
-    if (error) throw error
     setProgressRecords((prev) => prev.filter((p) => p.id !== id))
   }
 
   const refreshProgress = async () => {
-    await fetchProgress()
+    // No-op for local state
   }
 
   return (

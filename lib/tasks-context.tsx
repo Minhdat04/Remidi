@@ -1,7 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { createBrowserClient } from "@supabase/ssr"
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { useAuth } from "./auth-context"
 
 export interface Task {
@@ -34,65 +33,38 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined)
 
 export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const fetchTasks = async () => {
-    if (!user) {
-      setTasks([])
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("due_date", { ascending: true })
-
-      if (error) throw error
-      setTasks(data || [])
-    } catch (error) {
-      console.error("[v0] Error fetching tasks:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchTasks()
-  }, [user])
 
   const addTask = async (task: Omit<Task, "id" | "user_id" | "created_at" | "updated_at">) => {
     if (!user) throw new Error("User not authenticated")
 
-    const { data, error } = await supabase
-      .from("tasks")
-      .insert([{ ...task, user_id: user.id }])
-      .select()
-      .single()
+    const newTask: Task = {
+      ...task,
+      id: `task-${Date.now()}`,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
 
-    if (error) throw error
-    setTasks((prev) => [data, ...prev])
+    setTasks((prev) => [newTask, ...prev])
   }
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    const { data, error } = await supabase.from("tasks").update(updates).eq("id", id).select().single()
-
-    if (error) throw error
-    setTasks((prev) => prev.map((task) => (task.id === id ? data : task)))
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id
+          ? {
+              ...task,
+              ...updates,
+              updated_at: new Date().toISOString(),
+            }
+          : task,
+      ),
+    )
   }
 
   const deleteTask = async (id: string) => {
-    const { error } = await supabase.from("tasks").delete().eq("id", id)
-
-    if (error) throw error
     setTasks((prev) => prev.filter((task) => task.id !== id))
   }
 
@@ -109,7 +81,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshTasks = async () => {
-    await fetchTasks()
+    // No-op for local state
   }
 
   return (

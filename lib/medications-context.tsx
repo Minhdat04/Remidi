@@ -1,7 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { createBrowserClient } from "@supabase/ssr"
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { useAuth } from "./auth-context"
 
 export interface Medication {
@@ -34,65 +33,38 @@ const MedicationsContext = createContext<MedicationsContextType | undefined>(und
 
 export function MedicationsProvider({ children }: { children: ReactNode }) {
   const [medications, setMedications] = useState<Medication[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const fetchMedications = async () => {
-    if (!user) {
-      setMedications([])
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("medications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-      setMedications(data || [])
-    } catch (error) {
-      console.error("[v0] Error fetching medications:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchMedications()
-  }, [user])
 
   const addMedication = async (medication: Omit<Medication, "id" | "user_id" | "created_at" | "updated_at">) => {
     if (!user) throw new Error("User not authenticated")
 
-    const { data, error } = await supabase
-      .from("medications")
-      .insert([{ ...medication, user_id: user.id }])
-      .select()
-      .single()
+    const newMedication: Medication = {
+      ...medication,
+      id: `med-${Date.now()}`,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
 
-    if (error) throw error
-    setMedications((prev) => [data, ...prev])
+    setMedications((prev) => [newMedication, ...prev])
   }
 
   const updateMedication = async (id: string, updates: Partial<Medication>) => {
-    const { data, error } = await supabase.from("medications").update(updates).eq("id", id).select().single()
-
-    if (error) throw error
-    setMedications((prev) => prev.map((med) => (med.id === id ? data : med)))
+    setMedications((prev) =>
+      prev.map((med) =>
+        med.id === id
+          ? {
+              ...med,
+              ...updates,
+              updated_at: new Date().toISOString(),
+            }
+          : med,
+      ),
+    )
   }
 
   const deleteMedication = async (id: string) => {
-    const { error } = await supabase.from("medications").delete().eq("id", id)
-
-    if (error) throw error
     setMedications((prev) => prev.filter((med) => med.id !== id))
   }
 
@@ -104,7 +76,7 @@ export function MedicationsProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshMedications = async () => {
-    await fetchMedications()
+    // No-op for local state
   }
 
   return (

@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { createBrowserClient } from "@supabase/ssr"
 import { useAuth } from "./auth-context"
 import { useNotifications } from "./notification-context"
 
@@ -35,41 +34,9 @@ const RemindersContext = createContext<RemindersContextType | undefined>(undefin
 
 export function RemindersProvider({ children }: { children: ReactNode }) {
   const [reminders, setReminders] = useState<Reminder[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const { user } = useAuth()
   const { addNotification } = useNotifications()
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const fetchReminders = async () => {
-    if (!user) {
-      setReminders([])
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("reminders")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("reminder_time", { ascending: true })
-
-      if (error) throw error
-      setReminders(data || [])
-    } catch (error) {
-      console.error("[v0] Error fetching reminders:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchReminders()
-  }, [user])
 
   // Check for due reminders every minute
   useEffect(() => {
@@ -84,13 +51,11 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
 
         const reminderTime = new Date(reminder.reminder_time).toTimeString().slice(0, 5)
 
-        // Check if reminder is due
         if (reminderTime === currentTime) {
           const lastTriggered = reminder.last_triggered_at ? new Date(reminder.last_triggered_at) : null
-          const shouldTrigger = !lastTriggered || now.getTime() - lastTriggered.getTime() > 60000 // 1 minute
+          const shouldTrigger = !lastTriggered || now.getTime() - lastTriggered.getTime() > 60000
 
           if (shouldTrigger) {
-            // Trigger notification
             addNotification({
               type: reminder.reminder_type === "medication" ? "medicine" : "reminder",
               title: reminder.title,
@@ -101,15 +66,14 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
               icon: reminder.reminder_type === "medication" ? "💊" : "🔔",
             })
 
-            // Update last triggered time
             updateReminder(reminder.id, { last_triggered_at: now.toISOString() })
           }
         }
       })
     }
 
-    const interval = setInterval(checkReminders, 60000) // Check every minute
-    checkReminders() // Check immediately
+    const interval = setInterval(checkReminders, 60000)
+    checkReminders()
 
     return () => clearInterval(interval)
   }, [reminders, user])
@@ -117,27 +81,32 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
   const addReminder = async (reminder: Omit<Reminder, "id" | "user_id" | "created_at" | "updated_at">) => {
     if (!user) throw new Error("User not authenticated")
 
-    const { data, error } = await supabase
-      .from("reminders")
-      .insert([{ ...reminder, user_id: user.id }])
-      .select()
-      .single()
+    const newReminder: Reminder = {
+      ...reminder,
+      id: `reminder-${Date.now()}`,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
 
-    if (error) throw error
-    setReminders((prev) => [data, ...prev])
+    setReminders((prev) => [newReminder, ...prev])
   }
 
   const updateReminder = async (id: string, updates: Partial<Reminder>) => {
-    const { data, error } = await supabase.from("reminders").update(updates).eq("id", id).select().single()
-
-    if (error) throw error
-    setReminders((prev) => prev.map((reminder) => (reminder.id === id ? data : reminder)))
+    setReminders((prev) =>
+      prev.map((reminder) =>
+        reminder.id === id
+          ? {
+              ...reminder,
+              ...updates,
+              updated_at: new Date().toISOString(),
+            }
+          : reminder,
+      ),
+    )
   }
 
   const deleteReminder = async (id: string) => {
-    const { error } = await supabase.from("reminders").delete().eq("id", id)
-
-    if (error) throw error
     setReminders((prev) => prev.filter((reminder) => reminder.id !== id))
   }
 
@@ -149,7 +118,7 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshReminders = async () => {
-    await fetchReminders()
+    // No-op for local state
   }
 
   return (
